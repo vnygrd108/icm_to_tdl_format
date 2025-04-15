@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICM to Tally Journal Entry Excel Sheet Converter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            max-width: 500px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .custom-file-input {
+            display: none;
+        }
+
+        .custom-file-label {
+            padding: 10px;
+            border: 2px dashed #007bff;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .custom-file-label:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-upload {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 15px;
+        }
+
+        .btn-upload:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark w-100">
+        <div class="container-fluid">
+            <a class="navbar-brand mx-auto" href="#">ICM to Tally Journal Entry Excel Sheet Converter</a>
+        </div>
+    </nav>
+
+    <!-- Upload Box -->
+    <div class="container mt-4">
+        <h3 class="mb-4">Upload an Excel file for processing</h3>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <label class="custom-file-label">
+                Click to Select an Excel File
+                <input type="file" name="file" class="custom-file-input" required onchange="showFileName(this)">
+            </label>
+            <p id="file-name" class="mt-2 text-muted"></p>
+            <button type="submit" class="btn-upload">Upload & Process</button>
+        </form>
+    </div>
+
+    <script>
+        function showFileName(input) {
+            if (input.files.length > 0) {
+                document.getElementById("file-name").innerText = "Selected file: " + input.files[0].name;
+            }
+        }
+    </script>
+
+</body>
+</html>
+
