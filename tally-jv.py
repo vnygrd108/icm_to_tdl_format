@@ -9,8 +9,15 @@ app = Flask(__name__)
 # Function to process Excel file
 def process_excel(file):
     df = pd.read_excel(file)
+
     df1 = df[['UID', 'BudgetItem', 'Department', 'Amount', 'Vendor/Transfer to department', 'AmountRemarks']]
-    df2 = df1.rename(columns={'UID': 'Entry No', 'BudgetItem': 'Dr Ledger Name', 'Department':'Dr Cost Center', 'Amount':'Dr Amt', 'Vendor/Transfer to department':'Cr Ledger Name'})
+    df2 = df1.rename(columns={
+        'UID': 'Entry No',
+        'BudgetItem': 'Dr Ledger Name',
+        'Department': 'Dr Cost Center',
+        'Amount': 'Dr Amt',
+        'Vendor/Transfer to department': 'Cr Ledger Name'
+    })
 
     def extract_reference(text):
         bill_match = re.search(r'Bill No\.\s*(\S+)', str(text))
@@ -26,7 +33,7 @@ def process_excel(file):
 
     df2['Bill Ref No.'] = df2['AmountRemarks'].apply(extract_reference)
     df2['Vch Narration'] = 'UID No. ' + df2['Entry No'].astype(str) + ' ' + df2['AmountRemarks']
-    
+
     df3 = df2[['Entry No', 'Dr Ledger Name', 'Dr Cost Center', 'Dr Amt', 'Cr Ledger Name', 'Bill Ref No.', 'Vch Narration']]
     df3.insert(0, 'Date', '')
     df3.insert(2, 'Vch Name', '')
@@ -41,17 +48,17 @@ def process_excel(file):
     df4['Dr Amt'] = df4['Dr Amt'].apply(lambda x: f"{x:,.2f}")
     df4['Cr Amt'] = df4['Cr Amt'].apply(lambda x: f"{x:,.2f}")
 
-    tally_icm_heads = pd.read_excel('tally_icm_heads.xlsx')
-    tally_icm_heads = tally_icm_heads[['icm_heads', 'tally_heads']]
-    tally_icm_heads.rename(columns={'icm_heads': 'Dr Ledger Name'}, inplace=True)
-
-    df4 = df4.merge(tally_icm_heads, on='Dr Ledger Name', how='left')
-    df4.drop(columns=['Dr Ledger Name'], inplace=True)
-    df4.rename(columns={'tally_heads': 'Dr Ledger Name'}, inplace=True)
-
-    df5 = df4[['Date', 'Entry No', 'Vch Name', 'Dr Ledger Name', 'Dr Cost Center', 'Dr Amt', 'Cr Ledger Name', 'Cr Cost Center', 'Cr Amt', 'Bill Ref No.', 'Vch Narration']]
+    
+    df5 = df4[['Date', 'Entry No', 'Vch Name', 'Dr Ledger Name', 'Dr Amt', 'Dr Cost Center', 
+               'Cr Ledger Name', 'Cr Amt', 'Cr Cost Center',  'Vch Narration', 'Bill Ref No.' ]]
+    
     df5 = df5[~df5['Vch Narration'].str.contains("Internal Transfer", na=False)]
     df6 = df5.drop_duplicates()
+
+    # Fill 'Date' and 'Vch Name'
+    today = datetime.today().strftime('%d/%m/%Y')
+    df6['Date'] = today
+    df6['Vch Name'] = 'Journal'
 
     output_filename = f'ICT_to_TDL_Format_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.xlsx'
     df6.to_excel(output_filename, index=False)
@@ -72,7 +79,6 @@ def upload():
         return "No selected file", 400
 
     output_file = process_excel(file)
-
     return send_file(output_file, as_attachment=True)
 
 if __name__ == '__main__':
