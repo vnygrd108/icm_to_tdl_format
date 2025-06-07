@@ -1,0 +1,53 @@
+Sub Tally_Multiple_Entry_Format()
+
+    Dim ws As Worksheet
+    Set ws = ActiveSheet
+
+    Dim lastRow As Long
+    lastRow = ws.Cells(ws.Rows.Count, "G").End(xlUp).Row
+
+    Dim checkCols As Variant
+    checkCols = Array("G", "H", "I", "J", "K") ' Columns to check for duplicates
+
+    Dim i As Long, j As Long, match As Boolean
+    Dim startRow As Long: startRow = 2 ' Assumes row 1 has headers
+
+    i = startRow
+
+    Do While i <= lastRow
+        Dim mergeStart As Long: mergeStart = i
+        Dim mergeEnd As Long: mergeEnd = i
+
+        Do While mergeEnd < lastRow
+            match = True
+            For j = 0 To UBound(checkCols)
+                If ws.Cells(mergeEnd, checkCols(j)).Value <> ws.Cells(mergeEnd + 1, checkCols(j)).Value Then
+                    match = False
+                    Exit For
+                End If
+            Next j
+
+            If match Then
+                mergeEnd = mergeEnd + 1
+            Else
+                Exit Do
+            End If
+        Loop
+
+        ' Merge if multiple identical rows found
+        If mergeEnd > mergeStart Then
+            For j = 0 To UBound(checkCols)
+                With ws.Range(ws.Cells(mergeStart, checkCols(j)), ws.Cells(mergeEnd, checkCols(j)))
+                    .Merge
+                    .VerticalAlignment = xlCenter
+                    .HorizontalAlignment = xlCenter
+                End With
+            Next j
+        End If
+
+        i = mergeEnd + 1
+    Loop
+
+    MsgBox "Hare Krishna, Tally Multiple Entry Format Done!", vbInformation
+
+End Sub

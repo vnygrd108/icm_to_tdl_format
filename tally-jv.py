@@ -48,20 +48,29 @@ def process_excel(file):
     df4['Dr Amt'] = df4['Dr Amt'].apply(lambda x: f"{x:,.2f}")
     df4['Cr Amt'] = df4['Cr Amt'].apply(lambda x: f"{x:,.2f}")
 
-    
-    df5 = df4[['Date', 'Entry No', 'Vch Name', 'Dr Ledger Name', 'Dr Amt', 'Dr Cost Center', 
-               'Cr Ledger Name', 'Cr Amt', 'Cr Cost Center',  'Vch Narration', 'Bill Ref No.' ]]
-    
+    # ----- Your newly requested logic starts here -----
+    df5 = df4.drop_duplicates()
+    df5 = df5[~df5.apply(lambda row: row.astype(str).str.contains('Shri Chaitanya Health and Care Trust \(Branch Transfer\)').any(), axis=1)]
+
+    # Replace blank or NaN values in 'Bill Ref No.' with values from 'Entry No'
+    df5['Bill Ref No.'] = df5['Bill Ref No.'].replace('', pd.NA)  # convert empty strings to NA
+    df5['Bill Ref No.'] = df5['Bill Ref No.'].fillna(df5['Entry No'])
+
+    # Remove "Internal Transfer" narration if still needed
     df5 = df5[~df5['Vch Narration'].str.contains("Internal Transfer", na=False)]
-    df6 = df5.drop_duplicates()
+    # ----- Your newly requested logic ends here -----
 
     # Fill 'Date' and 'Vch Name'
     today = datetime.today().strftime('%d/%m/%Y')
-    df6['Date'] = today
-    df6['Vch Name'] = 'Journal'
+    df5['Date'] = today
+    df5['Vch Name'] = 'Journal'
+
+    # Final column order
+    final_df = df5[['Date', 'Entry No', 'Vch Name', 'Dr Ledger Name', 'Dr Amt', 'Dr Cost Center',
+                    'Cr Ledger Name', 'Cr Amt', 'Cr Cost Center', 'Vch Narration', 'Bill Ref No.']]
 
     output_filename = f'ICT_to_TDL_Format_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.xlsx'
-    df6.to_excel(output_filename, index=False)
+    final_df.to_excel(output_filename, index=False)
 
     return output_filename
 
